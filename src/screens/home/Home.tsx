@@ -19,7 +19,7 @@ interface GeneratedResult {
 export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false); //drawing state
-  const [color, setColor] = useState('rgb(255,255,255'); //to set pen colour
+  const [color, setColor] = useState('rgb(255,255,255)'); //to set pen colour
   const [reset, setReset] = useState(false); //to reset the canvas
   const [result, setResult] = useState<GeneratedResult | null>(null);
   const [dictOfVars, setDictOfVars] = useState({});
@@ -42,10 +42,11 @@ export default function Home() {
         canvas.height = window.innerHeight - canvas.offsetTop;
         ctx.lineWidth = 3;
         ctx.lineCap = 'round';
-        ctx.strokeStyle = 'rgb(255,255,255';
+        ctx.strokeStyle = color;
+        canvas.style.background = 'black'; // Set background to black initially
       }
     }
-  }, []);
+  }, []); // Only run this effect once on component mount
 
   const sendData = async () => {
     const canvas = canvasRef.current;
@@ -70,39 +71,43 @@ export default function Home() {
       const ctx = canvas.getContext('2d');
       if (ctx) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.strokeStyle = 'rgb(255,255,255';
       }
     }
   };
+
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (canvas) {
-      canvas.style.background = 'black';
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.beginPath();
-        ctx.moveTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
-        setIsDrawing(true);
-      }
-    }
-  };
-  const stopDrawing = () => {
-    setIsDrawing(false);
-  };
-  const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isDrawing) {
-      return;
-    }
-    //wee will only draw when isDrawing is true on MouseDown
     const canvas = canvasRef.current;
     if (canvas) {
       const ctx = canvas.getContext('2d');
       if (ctx) {
-        ctx.strokeStyle = 'rgb(255,255,255';
+        ctx.beginPath();
+        ctx.moveTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
+        ctx.strokeStyle = color; // Set the current color
+        setIsDrawing(true);
+      }
+    }
+  };
+
+  const stopDrawing = () => {
+    setIsDrawing(false);
+  };
+
+  const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDrawing) {
+      return;
+    }
+    //we will only draw when isDrawing is true on MouseDown
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.strokeStyle = color; // Use the current color state
         ctx.lineTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY); //follows the mouse path
         ctx.stroke(); // to draw
       }
     }
   };
+
   return (
     <>
       <div className='grid grid-cols-3 gap-2'>
@@ -124,7 +129,7 @@ export default function Home() {
           ))}
         </Group>
         <Button
-          // onClick={runRoute}
+          onClick={sendData}
           className='z-20 text-white bg-black'
           variant='default'
           color='white'
@@ -139,7 +144,7 @@ export default function Home() {
         onMouseDown={startDrawing}
         onMouseUp={stopDrawing}
         onMouseOut={stopDrawing}
-        onMouseMove={draw} //calling draw whenevr mouse moves
+        onMouseMove={draw} //calling draw whenever mouse moves
       />
     </>
   );
