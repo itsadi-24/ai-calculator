@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ColorSwatch, Group } from '@mantine/core';
 import { SWATCHES } from '@/lib/constants';
+import axios from 'axios';
 
 interface Response {
   expr: string;
@@ -21,7 +22,7 @@ export default function Home() {
   const [color, setColor] = useState('rgb(255,255,255'); //to set pen colour
   const [reset, setReset] = useState(false); //to reset the canvas
   const [result, setResult] = useState<GeneratedResult | null>(null);
-  const [dict, setDict] = useState({});
+  const [dictOfVars, setDictOfVars] = useState({});
 
   //runs everytime the reset state changes
   useEffect(() => {
@@ -46,7 +47,22 @@ export default function Home() {
     }
   }, []);
 
-  const sendData = async () => {};
+  const sendData = async () => {
+    const canvas = canvasRef.current;
+
+    if (canvas) {
+      const response = await axios({
+        method: 'post',
+        url: `{import.meta.env.VITE_API_URL}/calculate`,
+        data: {
+          image: canvas.toDataURL('image/png'), //converting canvas to image format
+          dict_of_vars: dictOfVars,
+        },
+      });
+      const resp = await response.data;
+      console.log('Response :', resp);
+    }
+  };
 
   const resetCanvas = () => {
     const canvas = canvasRef.current;
